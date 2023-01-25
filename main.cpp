@@ -1,13 +1,18 @@
 #include <iostream>
+#include <vector>
+
 #include <glm/common.hpp>
+#include <glm/integer.hpp>
 #include <glm/vec3.hpp>
-#include <glm/mat3x3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/mat4x3.hpp>
 #include <glm/geometric.hpp>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-
+using namespace std;
 class SoftwareRasterizer{
+
     // Framebuffer
     const int frameWidth;
     const int frameHeight;
@@ -54,8 +59,9 @@ class SoftwareRasterizer{
         IMG_SavePNG(framebuffer, outputFile);
     }
 
+
     void clear(glm::vec4 color){
-        // Select the color for drawing. It is set to red here.
+        // argument is normalized
         color *= 255;
         SDL_Rect framerect {0,0,frameWidth, frameHeight};
         SDL_PixelFormat *format = framebuffer->format;
@@ -63,16 +69,19 @@ class SoftwareRasterizer{
         SDL_FillRect(framebuffer, &framerect, bgColor);
     }
 
+    /**
+     * Adds a triangle to framebuffer
+    */
     void draw_triangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 color){
-        glm::vec3 v1{v4_1}, v2{v4_2}, v3{v4_3};
-        glm::mat3x3 scale{
-            frameWidth,0,0,
-            0,frameHeight,0,
-            0,0,1
+        // transposed on multiplication with vector
+        glm::mat4x3 scale{
+            frameWidth/2.0,     0,              0,
+            0,              frameHeight/2.0,    0,
+            0,                  0,              1,
+            frameWidth/2.0, frameHeight/2.0,    0
         };
-        v1 = scale * v1;
-        v2 = scale * v2;
-        v3 = scale * v3;
+        
+        glm::vec3 v1{scale * v4_1}, v2{scale * v4_2}, v3{scale * v4_3};
         
         Uint32 *pixels = (Uint32*)framebuffer->pixels;
         SDL_PixelFormat *format = framebuffer->format;
@@ -89,22 +98,29 @@ class SoftwareRasterizer{
                 if(glm::cross(v1-v3,pos-v3)[2]<0){
                     continue;
                 }
-                pixels[i + frameWidth*j] = SDL_MapRGBA(format, color[0], color[1], color[2], color[3]);
+                pixels[i + frameWidth*(frameHeight - 1 - j)] = SDL_MapRGBA(format, color[0], color[1], color[2], color[3]);
             }
         }
     }
 
-    void draw(){
-        draw_triangle(
-            glm::vec4{0.3,0.3,0,0},
-            glm::vec4{0.7,0.1,0,0},
-            glm::vec4{0.4,0.7,0,0},
-            glm::vec4{1,0,0,1}
-        );
+    /**
+     * Adds a shape to framebuffer
+    */
+    void draw(vector<glm::vec4> vertices, vector<glm::ivec3> indices){
+        for(glm::ivec3  i :indices){
+            draw_triangle(
+                vertices[i[0]],
+                vertices[i[1]],
+                vertices[i[2]],
+                glm::vec4{1,0,0,1}
+            );
+        }
     }
 
+    /** 
+     * Update screen to apply the changes
+    */
     void render(){
-        // Update screen to apply the changes
         SDL_BlitScaled(framebuffer, NULL, windowSurface, NULL);
         SDL_UpdateWindowSurface(window);
     }
@@ -118,10 +134,20 @@ class SoftwareRasterizer{
 };
 
 int main(int argc, char* args[]) {
-    SoftwareRasterizer sR{100,100,4};
+    SoftwareRasterizer sR{50,50,4};
     
     sR.clear(glm::vec4(1,1,0,1));
-    sR.draw();
+    vector<glm::vec4> vertices = {
+            glm::vec4(-0.8, 0.0, 0.0, 1.0),
+            glm::vec4(-0.4, -0.8, 0.0, 1.0),
+            glm::vec4(0.8, 0.8, 0.0, 1.0),
+            glm::vec4(-0.4, -0.4, 0.0, 1.0)
+        };
+    vector<glm::ivec3> indices ={
+            glm::ivec3{0,1,3},
+            glm::ivec3{1,2,3}
+        };
+    sR.draw(vertices, indices);
     sR.render();
 	// Save image
     sR.saveFramebuffer();
