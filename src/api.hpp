@@ -54,14 +54,20 @@ public:
 
 	/** Built-in shaders **/
 
-	// A vertex shader that passes on the 0th vertex attribute as the position.
+	// A vertex shader that uses the 0th vertex attribute as the position.
 	VertexShader vsIdentity();
+
+	// A vertex shader that uses the 0th vertex attribute as the position and passes on the 1th attribute as the color.
+	VertexShader vsColor();
 
 	// A vertex shader that applies the transformation matrix given by the uniform named 'transform'.
 	VertexShader vsTransform();
 
 	// A fragment shader that returns a constant colour given by the uniform named 'color'.
 	FragmentShader fsConstant(); 
+
+	// A fragment shader that uses the 0th attribute as the color.
+	FragmentShader fsIdentity(); 
 
 private:
 	SDL_Window *window;

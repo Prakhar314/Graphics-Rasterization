@@ -111,37 +111,37 @@ namespace COL781 {
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec2 &value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec2 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform2fv(location, 1, &value[0]);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec3 &value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec3 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform3fv(location, 1, &value[0]);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec4 &value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec4 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform4fv(location, 1, &value[0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat2 &value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat2 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat3 &value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat3 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat4 &value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat4 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
@@ -276,9 +276,9 @@ namespace COL781 {
 		VertexShader Rasterizer::vsIdentity() {
 			const char *source =
 				"#version 330 core\n"
-				"layout(location = 0) in vec4 position;\n"
+				"layout(location = 0) in vec4 vertex;\n"
 				"void main() {\n"
-				"	gl_Position = position;\n"
+				"	gl_Position = vertex;\n"
 				"}\n";
 			return createShader(GL_VERTEX_SHADER, source);
 		}
@@ -286,10 +286,23 @@ namespace COL781 {
 		VertexShader Rasterizer::vsTransform() {
 			const char *source =
 				"#version 330 core\n"
-				"layout(location = 0) in vec4 position;\n"
-				"uniform mat4 transformation;\n"
+				"layout(location = 0) in vec4 vertex;\n"
+				"uniform mat4 transform;\n"
 				"void main() {\n"
-				"	gl_Position = transformation * position;\n"
+				"	gl_Position = transform * vertex;\n"
+				"}\n";
+			return createShader(GL_VERTEX_SHADER, source);
+		}
+
+		VertexShader Rasterizer::vsColor() {
+			const char *source =
+				"#version 330 core\n"
+				"layout(location = 0) in vec4 vertex;\n"
+				"layout(location = 1) in vec4 vColor;\n"
+				"out vec4 color;\n"
+				"void main() {\n"
+				"	gl_Position = vertex;\n"
+				"	color = vColor;\n"
 				"}\n";
 			return createShader(GL_VERTEX_SHADER, source);
 		}
@@ -298,9 +311,20 @@ namespace COL781 {
 			const char *source =
 				"#version 330 core\n"  
 				"uniform vec4 color;\n"
-				"out vec4 fragColor;\n"
+				"out vec4 fColor;\n"
 				"void main() {\n"
-				"	fragColor = color;\n"
+				"	fColor = color;\n"
+				"}\n";
+			return createShader(GL_FRAGMENT_SHADER, source);
+		}
+
+		FragmentShader Rasterizer::fsIdentity() {
+			const char *source =
+				"#version 330 core\n"  
+				"in vec4 color;\n"
+				"out vec4 fColor;\n"
+				"void main() {\n"
+				"	fColor = color;\n"
 				"}\n";
 			return createShader(GL_FRAGMENT_SHADER, source);
 		}

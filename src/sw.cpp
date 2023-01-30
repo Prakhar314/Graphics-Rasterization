@@ -22,22 +22,38 @@ namespace COL781 {
 
 		VertexShader Rasterizer::vsIdentity() {
 			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
-				glm::vec4 position = in.get<glm::vec4>(0);
-				return position;
+				glm::vec4 vertex = in.get<glm::vec4>(0);
+				return vertex;
 			};
 		}
 
 		VertexShader Rasterizer::vsTransform() {
 			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
-				glm::vec4 position = in.get<glm::vec4>(0);
+				glm::vec4 vertex = in.get<glm::vec4>(0);
 				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
-				return transform * position;
+				return transform * vertex;
+			};
+		}
+
+		VertexShader Rasterizer::vsColor() {
+			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
+				glm::vec4 vertex = in.get<glm::vec4>(0);
+				glm::vec4 color = in.get<glm::vec4>(1);
+				out.set<glm::vec4>(0, color);
+				return vertex;
 			};
 		}
 
 		FragmentShader Rasterizer::fsConstant() {
 			return [](const Uniforms &uniforms, const Attribs &in) {
 				glm::vec4 color = uniforms.get<glm::vec4>("color");
+				return color;
+			};
+		}
+
+		FragmentShader Rasterizer::fsIdentity() {
+			return [](const Uniforms &uniforms, const Attribs &in) {
+				glm::vec4 color = in.get<glm::vec4>(0);
 				return color;
 			};
 		}

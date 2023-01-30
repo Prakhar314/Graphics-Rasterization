@@ -13,3 +13,6 @@ target_link_libraries(a1 GLEW::GLEW glm::glm OpenGL::GL SDL2::SDL2)
 
 add_executable(e1 examples/e1.cpp)
 target_link_libraries(e1 a1)
+
+add_executable(e2 examples/e2.cpp)
+target_link_libraries(e2 a1)
