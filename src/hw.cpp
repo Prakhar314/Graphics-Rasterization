@@ -196,6 +196,15 @@ namespace COL781 {
 			glCheckError();
 		}
 		
+		void Rasterizer::enableTransparency() {
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		    glEnable( GL_BLEND );
+		}
+		
+		void Rasterizer::disableTransparency() {
+		    glDisable( GL_BLEND );
+		}
+
 		void Rasterizer::enableDepthTest() {
 			glEnable(GL_DEPTH_TEST);
 		    glDepthFunc(GL_LESS);   

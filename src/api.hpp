@@ -43,6 +43,12 @@ public:
 
 	/** Drawing **/
 	
+	// Enable transparency
+	void enableTransparency();
+
+	// Disable transparency
+	void disableTransparency();
+
 	// Enable depth testing.
 	void enableDepthTest();
 
