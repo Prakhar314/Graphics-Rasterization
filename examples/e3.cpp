@@ -28,9 +28,6 @@ int main() {
     // Enable depth test.
     r.enableDepthTest();
 
-    // Enable transparency.
-    // r.enableTransparency();
-
     // The transformation matrix.
     mat4 mvp = mat4(1.0f);
     while (!r.shouldQuit()) {
