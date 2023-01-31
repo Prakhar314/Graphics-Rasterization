@@ -195,6 +195,17 @@ namespace COL781 {
 			object.nTris = n;
 			glCheckError();
 		}
+		
+		void Rasterizer::enableDepthTest() {
+			glEnable(GL_DEPTH_TEST);
+		    glDepthFunc(GL_LESS);   
+			glCheckError();
+		}
+
+		void Rasterizer::disableDepthTest() {
+			glDisable(GL_DEPTH_TEST);
+			glCheckError();
+		}
 
 		void Rasterizer::clear(glm::vec4 color) {
 			glClearColor(color[0], color[1], color[2], color[3]);

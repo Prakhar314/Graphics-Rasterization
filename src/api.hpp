@@ -42,6 +42,12 @@ public:
 	void setTriangleIndices(Object &object, int n, glm::ivec3* indices);
 
 	/** Drawing **/
+	
+	// Enable depth testing.
+	void enableDepthTest();
+
+	// Disable depth testing.
+	void disableDepthTest();
 
 	// Clear the framebuffer, setting all pixels to the given color.
 	void clear(glm::vec4 color);
