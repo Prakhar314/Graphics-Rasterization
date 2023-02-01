@@ -83,7 +83,5 @@ public:
 
 private:
 	SDL_Window *window;
-	SDL_Surface *windowSurface;
-	SDL_Surface *framebuffer;
 	bool quit;
 };

@@ -57,7 +57,7 @@ namespace COL781 {
 				return color;
 			};
 		}
-	
+
 		// Implementation of Attribs and Uniforms classes
 
 		void checkDimension(int index, int actual, int requested) {
@@ -131,8 +131,6 @@ namespace COL781 {
 			}
 			values[name] = (void*)(new T(value));
 		}
-
-
 
 	}
 }
