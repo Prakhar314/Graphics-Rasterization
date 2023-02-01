@@ -62,12 +62,13 @@ namespace COL781 {
 			ShaderProgram s;
 			s.vs = vs;
 			s.fs = fs;
+			s.uniforms = NULL;
 			return s;
 		}
 
-		// void Rasterizer::useShaderProgram(const ShaderProgram &program) {
-				
-		// }
+		void Rasterizer::useShaderProgram(const ShaderProgram &program) {
+			
+		}
 
 
 		// Implementation of Attribs and Uniforms classes
@@ -152,7 +153,7 @@ namespace COL781 {
 			} else {
 				int screenWidth = width;
 				int screenHeight = height;
-				window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight, SDL_WINDOW_SHOWN);
+				window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight, SDL_WINDOW_SHOWN);
 				if (window == NULL) {
 					printf("Window could not be created! SDL_Error: %s", SDL_GetError());
 					success = false;
@@ -165,45 +166,10 @@ namespace COL781 {
 		}
 
 		bool Rasterizer::shouldQuit() {
-			SDL_Event e;
-			quit = false;
-			while (SDL_PollEvent(&e) != 0) {
-				if (e.type == SDL_QUIT) {
-					quit = true;
-				}
-			}
-			return quit;
+			if (quit)
+				return true;
+			return false;
 		}
-
-		Object Rasterizer::createObject() {
-			Object object;
-			return object;
-		}
-		
-		template <> void Rasterizer::setVertexAttribs(Object &object, int attribIndex, int n, const glm::vec4* data) {
-			object.attributeDims.push_back(n);
-			for(int i=0; i<n; i++) {
-				std::vector<float> temp;
-				temp.push_back(data[i][0]);
-				temp.push_back(data[i][1]);			
-				temp.push_back(data[i][2]);			
-				temp.push_back(data[i][3]);	
-				object.attributeValues.push_back(temp);	
-			}
-			object.attributeDims.push_back(n);
-		}
-
-		void Rasterizer::setTriangleIndices(Object &object, int n, glm::ivec3* indices) {
-			for(int i=0; i<n; i++) {
-				object.indices.push_back(indices[i]);
-			}
-		}
-
-		// template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec4 value) {
-		// 	program.uniforms.set<glm::vec4>(name, &value);
-		// }
-
-
 
 
 	}
