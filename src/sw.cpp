@@ -57,6 +57,19 @@ namespace COL781 {
 				return color;
 			};
 		}
+	
+		ShaderProgram Rasterizer::createShaderProgram(const VertexShader &vs, const FragmentShader &fs) {
+			ShaderProgram s;
+			s.vs = vs;
+			s.fs = fs;
+			s.uniforms = NULL;
+			return s;
+		}
+
+		void Rasterizer::useShaderProgram(const ShaderProgram &program) {
+			
+		}
+
 
 		// Implementation of Attribs and Uniforms classes
 
@@ -131,6 +144,33 @@ namespace COL781 {
 			}
 			values[name] = (void*)(new T(value));
 		}
+
+		bool Rasterizer::initialize(const std::string &title, int width, int height) {
+			bool success = true;
+			if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+				printf("SDL could not initialize! SDL_Error: %s", SDL_GetError());
+				success = false;
+			} else {
+				int screenWidth = width;
+				int screenHeight = height;
+				window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight, SDL_WINDOW_SHOWN);
+				if (window == NULL) {
+					printf("Window could not be created! SDL_Error: %s", SDL_GetError());
+					success = false;
+				} else {
+					windowSurface = SDL_GetWindowSurface(window);
+					framebuffer = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
+				}
+			}
+			return success;
+		}
+
+		bool Rasterizer::shouldQuit() {
+			if (quit)
+				return true;
+			return false;
+		}
+
 
 	}
 }
