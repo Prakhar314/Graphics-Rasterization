@@ -327,6 +327,34 @@ namespace COL781 {
 			return createShader(GL_VERTEX_SHADER, source);
 		}
 
+		VertexShader Rasterizer::vsPerspectiveCorrect() {
+			const char *source =
+				"#version 330 core\n"
+				"layout(location = 0) in vec4 vertex;\n"
+				"layout(location = 1) in vec4 vColor;\n"
+				"uniform mat4 transform;\n"
+				"out vec4 color;\n"
+				"void main() {\n"
+				"	gl_Position = transform * vertex;\n"
+				"	color = vColor;\n"
+				"}\n";
+			return createShader(GL_VERTEX_SHADER, source);
+		}
+
+		VertexShader Rasterizer::vsPerspectiveInCorrect() {
+			const char *source =
+				"#version 330 core\n"
+				"layout(location = 0) in vec4 vertex;\n"
+				"layout(location = 1) in vec4 vColor;\n"
+				"uniform mat4 transform;\n"
+				"noperspective out vec4 color;\n"
+				"void main() {\n"
+				"	gl_Position = transform * vertex;\n"
+				"	color = vColor;\n"
+				"}\n";
+			return createShader(GL_VERTEX_SHADER, source);
+		}
+
 		FragmentShader Rasterizer::fsConstant() {
 			const char *source =
 				"#version 330 core\n"  
@@ -342,6 +370,28 @@ namespace COL781 {
 			const char *source =
 				"#version 330 core\n"  
 				"in vec4 color;\n"
+				"out vec4 fColor;\n"
+				"void main() {\n"
+				"	fColor = color;\n"
+				"}\n";
+			return createShader(GL_FRAGMENT_SHADER, source);
+		}
+
+		FragmentShader Rasterizer::fsPerspectiveCorrect() {
+			const char *source =
+				"#version 330 core\n"  
+				"smooth in vec4 color;\n"
+				"out vec4 fColor;\n"
+				"void main() {\n"
+				"	fColor = color;\n"
+				"}\n";
+			return createShader(GL_FRAGMENT_SHADER, source);
+		}
+
+		FragmentShader Rasterizer::fsPerspectiveInCorrect() {
+			const char *source =
+				"#version 330 core\n"  
+				"noperspective in vec4 color;\n"
 				"out vec4 fColor;\n"
 				"void main() {\n"
 				"	fColor = color;\n"

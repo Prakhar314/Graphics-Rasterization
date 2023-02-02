@@ -75,13 +75,28 @@ public:
 	// A vertex shader that applies the transformation matrix given by the uniform named 'transform'.
 	VertexShader vsTransform();
 
+	// A vertex shader that applies the transformation matrix given by the uniform named 'transform' and passes the color values to the fragment shader.
+	VertexShader vsPerspectiveCorrect();
+
+	// A vertex shader that applies the transformation matrix given by the uniform named 'transform' and passes the color values to the fragment shader. Uses noperspective.
+	VertexShader vsPerspectiveInCorrect();
+
 	// A fragment shader that returns a constant colour given by the uniform named 'color'.
 	FragmentShader fsConstant(); 
 
 	// A fragment shader that uses the 0th attribute as the color.
 	FragmentShader fsIdentity(); 
 
+	// A fragment shader that uses smooth specifier for perspective correct interpolation of color attributes.
+	FragmentShader fsPerspectiveCorrect(); 
+
+	// A fragment shader that uses noperspective specifier for perspective incorrect interpolation of color attributes.
+	FragmentShader fsPerspectiveInCorrect(); 
+	
+
 private:
 	SDL_Window *window;
 	bool quit;
 };
+
+
