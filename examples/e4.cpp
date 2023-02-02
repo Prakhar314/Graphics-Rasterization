@@ -9,42 +9,48 @@ int main() {
     if (!r.initialize("Example 1", 640, 480))
         return EXIT_FAILURE;
     R::ShaderProgram program = r.createShaderProgram(
-        r.vsTransform(),
+        r.vsIdentity(),
         r.fsConstant()
     );
-    vec4 vertices[] = {
-		vec4(-0.125, 0.0, 0.0, 1.0),
-        vec4(0.125, 0.0, 0.0, 1.0),
-        vec4(0.0, 0.5, 0.0, 1.0),
-    };
-	ivec3 triangles[] = {
-	ivec3(0, 1, 2)
-	};
-    
-    R::Object box = r.createObject();
-	r.setVertexAttribs(box, 0, 3, vertices);
-	r.setTriangleIndices(box, 1, triangles);
+	R::Object tri1 = r.createObject();
+	{
+		vec4 vertices[] = {
+			vec4(-0.125, -0.2, 0, 1.0),
+			vec4(0.125, -0.2, 0, 1.0),
+			vec4(0.0, 0.5, 0.1, 1.0),
+		};
+		ivec3 triangles[] = {
+			ivec3(0, 1, 2)
+		};
+		r.setVertexAttribs(tri1, 0, 3, vertices);
+		r.setTriangleIndices(tri1, 1, triangles);
+	}
+	R::Object tri2 = r.createObject();
+	{
+		vec4 vertices[] = {
+			vec4(0.2, 0.2, 0, 1.0),
+			vec4(-0.2, 0.2, 0, 1.0),
+			vec4(0.0, -0.3, 0.2, 1.0),
+		};
+		ivec3 triangles[] = {
+			ivec3(0, 1, 2)
+		};
+		r.setVertexAttribs(tri2, 0, 3, vertices);
+		r.setTriangleIndices(tri2, 1, triangles);
+	}
     
     // Enable depth test.
     r.enableDepthTest();
 
-    // The transformation matrix.
-    mat4 mvp = mat4(1.0f);
     while (!r.shouldQuit()) {
-        r.clear(vec4(0.9, 0.9, 0.9, 1.0));
+        r.clear(vec4(1.0, 1.0, 1.0, 1.0));
         r.useShaderProgram(program);
 
-        mvp = mat4(1.0f);
-        r.setUniform(program, "transform", mvp);
-        r.setUniform<vec4>(program, "color", vec4(0.79, 0.63, 0.86, 1.0));
-		r.drawObject(box);
+        r.setUniform<vec4>(program, "color", vec4(0.9, 0.7, 0.5, 1.0));
+		r.drawObject(tri1);
 
-        mvp = mat4(1.0f);
-        mvp = translate(mvp, vec3(0.0f, 0.25f, -0.25f));
-        mvp = rotate(mvp, radians(120.0f), normalize(vec3(1.0f, 0.0f, 0.0f)));
-        r.setUniform(program, "transform", mvp);
-        r.setUniform<vec4>(program, "color", vec4(0.5, 0.5, 0.5, 1.0));
-		r.drawObject(box);
+        r.setUniform<vec4>(program, "color", vec4(0.6, 0.6, 0.8, 1.0));
+		r.drawObject(tri2);
 
         r.show();
     }
