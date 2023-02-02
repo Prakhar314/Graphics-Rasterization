@@ -22,7 +22,7 @@ public:
 
 	// Sets the value of a uniform variable.
 	// T is only allowed to be float, int, glm::vec2/3/4, glm::mat2/3/4.
-	template <typename T> void setUniform(const ShaderProgram &program, const std::string &name, T value);
+	template <typename T> void setUniform(ShaderProgram &program, const std::string &name, T value);
 
 	// Deletes the given shader program.
 	void deleteShaderProgram(ShaderProgram &program);
@@ -92,11 +92,8 @@ public:
 
 	// A fragment shader that uses noperspective specifier for perspective incorrect interpolation of color attributes.
 	FragmentShader fsPerspectiveInCorrect(); 
-	
 
 private:
 	SDL_Window *window;
 	bool quit;
 };
-
-
