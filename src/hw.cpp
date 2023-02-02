@@ -99,49 +99,49 @@ namespace COL781 {
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, float value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, float value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform1f(location, value);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, int value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, int value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform1i(location, value);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec2 value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec2 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform2fv(location, 1, &value[0]);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec3 value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec3 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform3fv(location, 1, &value[0]);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec4 value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec4 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform4fv(location, 1, &value[0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat2 value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat2 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat3 value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat3 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat4 value) {
+		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat4 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
