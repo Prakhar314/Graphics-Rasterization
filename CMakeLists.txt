@@ -22,3 +22,6 @@ target_link_libraries(e3 a1)
 
 add_executable(e4 examples/e4.cpp)
 target_link_libraries(e4 a1)
+
+add_executable(e5 examples/e5.cpp)
+target_link_libraries(e5 a1)

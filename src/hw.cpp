@@ -99,49 +99,49 @@ namespace COL781 {
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, float value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, float value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform1f(location, value);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, int value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, int value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform1i(location, value);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec2 value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec2 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform2fv(location, 1, &value[0]);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec3 value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec3 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform3fv(location, 1, &value[0]);
 			glCheckError();
 		}
 		
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec4 value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::vec4 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniform4fv(location, 1, &value[0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat2 value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat2 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat3 value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat3 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
 		}
 
-		template <> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat4 value) {
+		template <> void Rasterizer::setUniform(const ShaderProgram &program, const std::string &name, glm::mat4 value) {
 			GLint location = glGetUniformLocation(program, name.c_str());
 			glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
 			glCheckError();
@@ -327,6 +327,34 @@ namespace COL781 {
 			return createShader(GL_VERTEX_SHADER, source);
 		}
 
+		VertexShader Rasterizer::vsPerspectiveCorrect() {
+			const char *source =
+				"#version 330 core\n"
+				"layout(location = 0) in vec4 vertex;\n"
+				"layout(location = 1) in vec4 vColor;\n"
+				"uniform mat4 transform;\n"
+				"out vec4 color;\n"
+				"void main() {\n"
+				"	gl_Position = transform * vertex;\n"
+				"	color = vColor;\n"
+				"}\n";
+			return createShader(GL_VERTEX_SHADER, source);
+		}
+
+		VertexShader Rasterizer::vsPerspectiveInCorrect() {
+			const char *source =
+				"#version 330 core\n"
+				"layout(location = 0) in vec4 vertex;\n"
+				"layout(location = 1) in vec4 vColor;\n"
+				"uniform mat4 transform;\n"
+				"noperspective out vec4 color;\n"
+				"void main() {\n"
+				"	gl_Position = transform * vertex;\n"
+				"	color = vColor;\n"
+				"}\n";
+			return createShader(GL_VERTEX_SHADER, source);
+		}
+
 		FragmentShader Rasterizer::fsConstant() {
 			const char *source =
 				"#version 330 core\n"  
@@ -342,6 +370,28 @@ namespace COL781 {
 			const char *source =
 				"#version 330 core\n"  
 				"in vec4 color;\n"
+				"out vec4 fColor;\n"
+				"void main() {\n"
+				"	fColor = color;\n"
+				"}\n";
+			return createShader(GL_FRAGMENT_SHADER, source);
+		}
+
+		FragmentShader Rasterizer::fsPerspectiveCorrect() {
+			const char *source =
+				"#version 330 core\n"  
+				"smooth in vec4 color;\n"
+				"out vec4 fColor;\n"
+				"void main() {\n"
+				"	fColor = color;\n"
+				"}\n";
+			return createShader(GL_FRAGMENT_SHADER, source);
+		}
+
+		FragmentShader Rasterizer::fsPerspectiveInCorrect() {
+			const char *source =
+				"#version 330 core\n"  
+				"noperspective in vec4 color;\n"
 				"out vec4 fColor;\n"
 				"void main() {\n"
 				"	fColor = color;\n"
