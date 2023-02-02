@@ -98,3 +98,5 @@ private:
 	SDL_Window *window;
 	bool quit;
 };
+
+
