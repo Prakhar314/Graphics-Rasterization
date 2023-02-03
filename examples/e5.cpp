@@ -5,10 +5,10 @@
 // namespace R = COL781::Software;
 namespace R = COL781::Hardware;
 using namespace glm;
-int width, height;
 int main() {
 	R::Rasterizer r;
-    if (!r.initialize("Example 5", 640, 480))
+	int width = 640, height = 480;
+    if (!r.initialize("Example 5", width, height))
         return EXIT_FAILURE;
 
     R::ShaderProgram program = r.createShaderProgram(
@@ -38,8 +38,8 @@ int main() {
     r.enableDepthTest();
     // The transformation matrix.
     mat4 model = mat4(1.0f);
-	mat4 view = translate(mat4(1.0f), vec3(0.0f, 0.0f, -3.0f)); 
-    mat4 projection = perspective(radians(45.0f), (float)width/(float)height, 0.1f, 100.0f);
+	mat4 view = translate(mat4(1.0f), vec3(0.0f, 0.0f, -2.0f)); 
+    mat4 projection = perspective(radians(60.0f), (float)width/(float)height, 0.1f, 100.0f);
     float speed = 90.0f; // degrees per second
     while (!r.shouldQuit()) {
         float time = SDL_GetTicks64()*1e-3;

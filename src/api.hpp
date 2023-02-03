@@ -6,8 +6,8 @@ public:
 
 	/** Windows **/
 
-	// Creates a window with the given title and size.
-	bool initialize(const std::string &title, int width, int height);
+	// Creates a window with the given title, size, and samples per pixel.
+	bool initialize(const std::string &title, int width, int height, int spp=1);
 
 	// Returns true if the user has requested to quit the program.
 	bool shouldQuit(); 
@@ -43,17 +43,9 @@ public:
 
 	/** Drawing **/
 	
-	// Enable transparency
-	void enableTransparency();
-
-	// Disable transparency
-	void disableTransparency();
 
 	// Enable depth testing.
 	void enableDepthTest();
-
-	// Disable depth testing.
-	void disableDepthTest();
 
 	// Clear the framebuffer, setting all pixels to the given color.
 	void clear(glm::vec4 color);

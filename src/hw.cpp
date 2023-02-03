@@ -39,7 +39,7 @@ namespace COL781 {
 		}
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
-		bool Rasterizer::initialize(const std::string &title, int width, int height) {
+		bool Rasterizer::initialize(const std::string &title, int width, int height, int spp) {
 			if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 				std::cout << "Could not initialize SDL: " << SDL_GetError() << std::endl;
 				return false;
@@ -47,6 +47,8 @@ namespace COL781 {
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, spp);
 			window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 			if (!window) {
 				std::cerr << "Could not create window: " << SDL_GetError() << std::endl;
@@ -196,23 +198,9 @@ namespace COL781 {
 			glCheckError();
 		}
 		
-		void Rasterizer::enableTransparency() {
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		    glEnable( GL_BLEND );
-		}
-		
-		void Rasterizer::disableTransparency() {
-		    glDisable( GL_BLEND );
-		}
-
 		void Rasterizer::enableDepthTest() {
 			glEnable(GL_DEPTH_TEST);
 		    glDepthFunc(GL_LESS);   
-			glCheckError();
-		}
-
-		void Rasterizer::disableDepthTest() {
-			glDisable(GL_DEPTH_TEST);
 			glCheckError();
 		}
 

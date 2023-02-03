@@ -15,9 +15,9 @@ int main() {
 	R::Object tri1 = r.createObject();
 	{
 		vec4 vertices[] = {
-			vec4(-0.125, -0.2, 0, 1.0),
-			vec4(0.125, -0.2, 0, 1.0),
-			vec4(0.0, 0.5, 0.1, 1.0),
+			vec4(-0.25, -0.4, 0, 1.0),
+			vec4(0.25, -0.4, 0, 1.0),
+			vec4(0.0, 0.8, 0.1, 1.0),
 		};
 		ivec3 triangles[] = {
 			ivec3(0, 1, 2)
@@ -28,9 +28,9 @@ int main() {
 	R::Object tri2 = r.createObject();
 	{
 		vec4 vertices[] = {
-			vec4(0.2, 0.2, 0, 1.0),
-			vec4(-0.2, 0.2, 0, 1.0),
-			vec4(0.0, -0.3, 0.2, 1.0),
+			vec4(0.4, 0.4, 0, 1.0),
+			vec4(-0.4, 0.4, 0, 1.0),
+			vec4(0.0, -0.6, 0.2, 1.0),
 		};
 		ivec3 triangles[] = {
 			ivec3(0, 1, 2)
