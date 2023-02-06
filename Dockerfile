@@ -9,4 +9,4 @@ RUN apt-get -y update && apt-get install -y
 #     ./configure --enable-video-kmsdrm && \
 #     make -j4 && \
     # make install
-RUN apt-get install -y libsdl2-image-dev libglm-dev
+RUN apt-get install -y libsdl2-image-dev libglm-dev libglew-dev libopengl-dev cmake
