@@ -6,7 +6,7 @@ TARGET = main
 all: $(TARGET)
 
 run: $(TARGET)
-	SDL_VIDEODRIVER=dummy ./$(TARGET)
+	SDL_VIDEODRIVER=dummy timeout 5s ./$(TARGET)
 
 $(TARGET): $(TARGET).cpp
 	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cpp
