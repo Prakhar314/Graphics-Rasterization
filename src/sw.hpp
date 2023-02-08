@@ -27,6 +27,7 @@ namespace COL781 {
 			// any type allowed
 			template <typename T> T get(const std::string &name) const;
 			template <typename T> void set(const std::string &name, T value);
+			~Uniforms();
 		private:
 			std::map<std::string,void*> values;
 		};
@@ -41,9 +42,7 @@ namespace COL781 {
 		};
 
 		struct Object {
-			using Buffer = std::vector<float>;
-			std::vector<Buffer> attributeValues;
-			std::vector<int> attributeDims;
+			std::vector<Attribs> attribs;
 			std::vector<glm::ivec3> indices;
 		};
 
@@ -124,10 +123,16 @@ namespace COL781 {
 				FragmentShader fsIdentity(); 
 
 			private:
+				void drawTriangle(glm::vec4 v1, glm::vec4 v2, glm::vec4 v3, glm::vec4 color);
+
 				SDL_Surface* framebuffer = NULL;
 				SDL_Window* window = NULL;
 				SDL_Surface* windowSurface = NULL;
-				bool quit;
+				bool quit = false;
+				bool depthTesting = false;
+				int supersampling = 1;
+				int frameWidth, frameHeight;
+				ShaderProgram* currentProgram;
 			};
 
 	}
