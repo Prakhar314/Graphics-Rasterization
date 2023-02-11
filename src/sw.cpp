@@ -313,15 +313,20 @@ namespace COL781 {
 
 			float step = 1.0/(supersampling+1);
 
-			// v1, v2, v3 should be in clockwise order
+			// v1, v2, v3 should be in anticlockwise order
 			if(glm::cross(v2-v1,v3-v1)[2]<0){
 				glm::vec3 temp{v2};
 				v2 = v3;
 				v3 = temp;
 			}
 
-			for (int i = 0; i < frameWidth; i++) {
-				for (int j = 0; j < frameHeight; j++) {
+			float j_min = std::min(v1[1], std::min(v2[1], v3[1]));
+			float j_max = std::max(v1[1], std::max(v2[1], v3[1]));
+			float i_min = std::min(v1[0], std::min(v2[0], v3[0]));
+			float i_max = std::max(v1[0], std::max(v2[0], v3[0]));
+
+			for (int j = j_min; j <= j_max; j++) {
+				for (int i = i_min; i <= i_max; i++) {
 					// use previous color as default
 					Uint8 r,g,b, a;
 					SDL_GetRGBA(
