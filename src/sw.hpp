@@ -123,7 +123,10 @@ namespace COL781 {
 				FragmentShader fsIdentity(); 
 
 			private:
-				void drawTriangle(glm::vec4 v1, glm::vec4 v2, glm::vec4 v3, glm::vec4 color);
+				float line_eq(glm::vec3 v1, glm::vec3 v2, float x);
+				float get_dist(glm::vec3 v1, glm::vec3 v2, glm::vec3 p);
+				glm::vec4 interpolate_3(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec4 q1, glm::vec4 q2, glm::vec4 q3, glm::vec3 p);
+				void drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3);
 
 				SDL_Surface* framebuffer = NULL;
 				SDL_Window* window = NULL;

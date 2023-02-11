@@ -273,7 +273,28 @@ namespace COL781 {
 			SDL_FillRect(framebuffer, &framerect, bgColor);
 		}
 
-		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 color){
+		float Rasterizer::line_eq(glm::vec3 v1, glm::vec3 v2, float x){
+			return (v2[1] - v1[1]) / (v2[0]-v1[0]) * (x - v1[0]) + v1[1];
+		}
+
+		float Rasterizer::get_dist(glm::vec3 v1, glm::vec3 v2, glm::vec3 p){
+			if(v1[0]!=v2[0]){
+				return p[1] - line_eq(v1,v2,p[0]);
+			}
+			else{
+				return p[0] - v1[0];
+			}
+		}
+
+		glm::vec4 Rasterizer::interpolate_3(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec4 q1, glm::vec4 q2, glm::vec4 q3, glm::vec3 p){
+			float t1 = get_dist(v2,v3,p)/get_dist(v2,v3,v1);
+			float t2 = get_dist(v1,v3,p)/get_dist(v1,v3,v2);
+			float t3 = get_dist(v1,v2,p)/get_dist(v1,v2,v3);
+			// std:: cout << t1 << " " << t2 << " " << t3 << std::endl;
+			return t1*q1 + t2*q2 + t3*q3;
+		}
+
+		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3){
 			// transposed on multiplication with vector
 			glm::mat4x3 scale{
 				frameWidth/2.0,     0,              0,
@@ -286,7 +307,9 @@ namespace COL781 {
 			
 			Uint32 *pixels = (Uint32*)framebuffer->pixels;
 			SDL_PixelFormat *format = framebuffer->format;
-			color *= 255;
+			c1 *= 255;
+			c2 *= 255;
+			c3 *= 255;
 
 			float step = 1.0/(supersampling+1);
 
@@ -315,7 +338,11 @@ namespace COL781 {
 								glm::cross(v3-v2,pos-v2)[2]>0 && 
 								glm::cross(v1-v3,pos-v3)[2]>0
 							){
-								pixel_color += color;
+								pixel_color += interpolate_3(
+									v1,v2,v3,
+									c1,c2,c3,
+									pos
+								);
 							}
 							else{
 								pixel_color += default_color;
@@ -331,14 +358,15 @@ namespace COL781 {
 		}
 
 		void Rasterizer::drawObject(const Object &object){
-			Attribs temp;
 			for(glm::ivec3  i :object.indices){
-				drawTriangle(
-					currentProgram->vs(currentProgram->uniforms,object.attribs[i[0]],temp),
-					currentProgram->vs(currentProgram->uniforms,object.attribs[i[1]],temp),
-					currentProgram->vs(currentProgram->uniforms,object.attribs[i[2]],temp),
-					currentProgram->fs(currentProgram->uniforms,object.attribs[i[2]])
-				);
+				Attribs a1,a2,a3;
+				glm::vec4 v1 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[0]],a1);
+				glm::vec4 v2 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[1]],a2);
+				glm::vec4 v3 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[2]],a3);
+				glm::vec4 c1 = currentProgram->fs(currentProgram->uniforms,a1);
+				glm::vec4 c2 = currentProgram->fs(currentProgram->uniforms,a2);
+				glm::vec4 c3 = currentProgram->fs(currentProgram->uniforms,a3);
+				drawTriangle(v1,v2,v3,c1,c2,c3);
 			}
 		}
 
