@@ -152,6 +152,7 @@ namespace COL781 {
 					framebuffer = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
 				}
 			}
+			// samples per axis
 			supersampling = std::max(round(sqrt(spp)),1.0);
 			frameHeight=height;
 			frameWidth=width;
@@ -294,7 +295,7 @@ namespace COL781 {
 			return t1*q1 + t2*q2 + t3*q3;
 		}
 
-		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3){
+		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa){
 			// transposed on multiplication with vector
 			glm::mat4x3 scale{
 				frameWidth/2.0,     0,              0,
@@ -311,7 +312,7 @@ namespace COL781 {
 			c2 *= 255;
 			c3 *= 255;
 
-			float step = 1.0/(supersampling+1);
+			float step = 1.0/(spa+1);
 
 			// v1, v2, v3 should be in anticlockwise order
 			if(glm::cross(v2-v1,v3-v1)[2]<0){
@@ -335,8 +336,9 @@ namespace COL781 {
 					glm::ivec4 default_color{r,g,b,a};
 
 					glm::ivec4 pixel_color{0,0,0,0};
-					for(int s_i = 1; s_i <= supersampling; s_i++){
-						for(int s_j = 1; s_j <= supersampling; s_j++){
+					// spa * spa samples per pixel
+					for(int s_i = 1; s_i <= spa; s_i++){
+						for(int s_j = 1; s_j <= spa; s_j++){
 							glm::vec3 pos{i+s_i*step, j+s_j*step, 0};
 							if(
 								glm::cross(v2-v1,pos-v1)[2]>0 &&
@@ -355,7 +357,7 @@ namespace COL781 {
 						}                    
 					}
 					// average over number of samples
-					pixel_color /= supersampling*supersampling;
+					pixel_color /= spa*spa;
 					
 					pixels[i + frameWidth*(frameHeight - 1 - j)] = SDL_MapRGBA(format, pixel_color[0], pixel_color[1], pixel_color[2], pixel_color[3]);
 				}
@@ -363,6 +365,7 @@ namespace COL781 {
 		}
 
 		void Rasterizer::drawObject(const Object &object){
+			// without supersampling
 			for(glm::ivec3  i :object.indices){
 				Attribs a1,a2,a3;
 				glm::vec4 v1 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[0]],a1);
@@ -371,7 +374,21 @@ namespace COL781 {
 				glm::vec4 c1 = currentProgram->fs(currentProgram->uniforms,a1);
 				glm::vec4 c2 = currentProgram->fs(currentProgram->uniforms,a2);
 				glm::vec4 c3 = currentProgram->fs(currentProgram->uniforms,a3);
-				drawTriangle(v1,v2,v3,c1,c2,c3);
+				drawTriangle(v1,v2,v3,c1,c2,c3, 1);
+			}
+			if (supersampling==1){
+				return;
+			}
+			// with supersampling
+			for(glm::ivec3  i :object.indices){
+				Attribs a1,a2,a3;
+				glm::vec4 v1 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[0]],a1);
+				glm::vec4 v2 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[1]],a2);
+				glm::vec4 v3 = currentProgram->vs(currentProgram->uniforms,object.attribs[i[2]],a3);
+				glm::vec4 c1 = currentProgram->fs(currentProgram->uniforms,a1);
+				glm::vec4 c2 = currentProgram->fs(currentProgram->uniforms,a2);
+				glm::vec4 c3 = currentProgram->fs(currentProgram->uniforms,a3);
+				drawTriangle(v1,v2,v3,c1,c2,c3, supersampling);
 			}
 		}
 
