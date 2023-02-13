@@ -44,6 +44,16 @@ namespace COL781 {
 			};
 		}
 
+		VertexShader Rasterizer::vsColorTransform() {
+			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
+				glm::vec4 vertex = in.get<glm::vec4>(0);
+				glm::vec4 color = in.get<glm::vec4>(1);
+				out.set<glm::vec4>(0, color);
+				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
+				return transform * vertex;
+			};
+		}
+
 		FragmentShader Rasterizer::fsConstant() {
 			return [](const Uniforms &uniforms, const Attribs &in) {
 				glm::vec4 color = uniforms.get<glm::vec4>("color");
@@ -262,7 +272,7 @@ namespace COL781 {
 		}
 
 		void Rasterizer::enableDepthTest(){
-			this->depthTesting = true;
+			depthTesting = true;
 		}
 
 		void Rasterizer::clear(glm::vec4 color){
@@ -274,11 +284,12 @@ namespace COL781 {
 			SDL_FillRect(framebuffer, &framerect, bgColor);
 		}
 
-		float Rasterizer::line_eq(glm::vec3 v1, glm::vec3 v2, float x){
+		float Rasterizer::line_eq(const glm::vec3& v1, const glm::vec3& v2, float x){
 			return (v2[1] - v1[1]) / (v2[0]-v1[0]) * (x - v1[0]) + v1[1];
 		}
 
-		float Rasterizer::get_dist(glm::vec3 v1, glm::vec3 v2, glm::vec3 p){
+		float Rasterizer::get_dist(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& p){
+			// not distance but ratio should be ratio of distance
 			if(v1[0]!=v2[0]){
 				return p[1] - line_eq(v1,v2,p[0]);
 			}
@@ -287,7 +298,7 @@ namespace COL781 {
 			}
 		}
 
-		glm::vec4 Rasterizer::interpolate_3(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec4 q1, glm::vec4 q2, glm::vec4 q3, glm::vec3 p){
+		glm::vec4 Rasterizer::interpolate_3(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec4& q1, const glm::vec4& q2, const glm::vec4& q3, const glm::vec3& p){
 			float t1 = get_dist(v2,v3,p)/get_dist(v2,v3,v1);
 			float t2 = get_dist(v1,v3,p)/get_dist(v1,v3,v2);
 			float t3 = get_dist(v1,v2,p)/get_dist(v1,v2,v3);
@@ -295,7 +306,7 @@ namespace COL781 {
 			return t1*q1 + t2*q2 + t3*q3;
 		}
 
-		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa){
+		void Rasterizer::drawTriangle(const glm::vec4& v4_1, const glm::vec4& v4_2, const glm::vec4& v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa){
 			// transposed on multiplication with vector
 			glm::mat4x3 scale{
 				frameWidth/2.0,     0,              0,

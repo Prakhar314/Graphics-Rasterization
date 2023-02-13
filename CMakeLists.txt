@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(a1)
 set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
@@ -28,3 +30,6 @@ target_link_libraries(e5 a1)
 
 add_executable(clock examples/clock.cpp)
 target_link_libraries(clock a1)
+
+add_executable(cube examples/cube.cpp)
+target_link_libraries(cube a1)
