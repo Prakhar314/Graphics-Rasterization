@@ -389,13 +389,10 @@ namespace COL781
 
 		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa)
 		{
-			float z_o1 = 1/v4_1[3];
-			float z_o2 = 1/v4_2[3];
-			float z_o3 = 1/v4_3[3];
-			// std::cout << v4_1[0] << " " << v4_1[1] << " " << v4_1[2] << " " << v4_1[3] << std::endl;
-			// std::cout << v4_2[0] << " " << v4_2[1] << " " << v4_2[2] << " " << v4_2[3] << std::endl;
-			// std::cout << v4_3[0] << " " << v4_3[1] << " " << v4_3[2] << " " << v4_3[3] << std::endl;
-			// std::cout  << std::endl;
+			float p1 = 1/v4_1[3];
+			float p2 = 1/v4_2[3];
+			float p3 = 1/v4_3[3];
+			// perspective division
 			if (depthTesting)
 			{
 				v4_1 /= v4_1[3];
@@ -426,7 +423,7 @@ namespace COL781
 			v2[2] = 0;
 			v3[2] = 0;
 
-			// v1, v2, v3 should be in anticlockwise order
+			// cross product, used when checking if point is in triangle
 			float cp = glm::cross(v2 - v1, v3 - v1)[2];
 
 			float j_min = std::min(v1[1], std::min(v2[1], v3[1]));
@@ -450,8 +447,13 @@ namespace COL781
 						format, &r, &g, &b, &a);
 					glm::ivec4 default_color{r, g, b, a};
 
+					// keeping sum of samples here
 					glm::ivec4 pixel_color{0, 0, 0, 0};
-					bool isinside = false;
+
+					// whether point was inside the triangle or not
+					bool isInside = false;
+
+					// default depth
 					float z = 2.0f;
 					if(depthTesting){
 						float w1,w2,w3;
@@ -459,6 +461,7 @@ namespace COL781
 						z = (w1*z1 + w2*z2 + w3*z3);
 
 						if(z>=zbuffer[i + frameWidth * (frameHeight - 1 - j)]){
+							// far away, skip
 							continue;
 						}
 					}
@@ -468,16 +471,17 @@ namespace COL781
 						for (int s_j = 1; s_j <= spa; s_j++)
 						{
 							glm::vec3 pos{i + s_i * step, j + s_j * step, 0};
-							if (
+							if (// check if pos inside triangle
+								// same side of v1v2 as v3
 								glm::cross(v2 - v1, pos - v1)[2] * cp > 0 &&
 								glm::cross(v3 - v2, pos - v2)[2] * cp  > 0 &&
 								glm::cross(v1 - v3, pos - v3)[2] * cp  > 0)
 							{
-								isinside = true;
+								isInside = true;
 								float w1,w2,w3;
 								get_barycentric(v1, v2, v3,pos,w1,w2,w3);
 								if(depthTesting){
-									pixel_color += (w1*c1*z_o1 + w2*c2*z_o2 + w3*c3*z_o3)/(w1*z_o1 + w2*z_o2 + w3*z_o3);
+									pixel_color += (w1*c1*p1 + w2*c2*p2 + w3*c3*p3)/(w1*p1 + w2*p2 + w3*p3);
 								}
 								else{
 									pixel_color += (w1*c1 + w2*c2 + w3*c3);
@@ -489,11 +493,11 @@ namespace COL781
 							}
 						}
 					}
-					// average over number of samples
-					pixel_color /= spa * spa;
-					if(depthTesting && !isinside){
+					if(!isInside){
 						continue;
 					}					
+					// average over number of samples
+					pixel_color /= spa * spa;
 					if(!depthTesting || z <= zbuffer[i + frameWidth * (frameHeight - 1 - j)]){
 						pixels[i + frameWidth * (frameHeight - 1 - j)] = SDL_MapRGBA(format, pixel_color[0], pixel_color[1], pixel_color[2], pixel_color[3]);
 						if(depthTesting){
@@ -507,7 +511,6 @@ namespace COL781
 
 		void Rasterizer::drawObject(const Object &object)
 		{
-			// without supersampling
 			for (glm::ivec3 i : object.indices)
 			{
 				Attribs a1, a2, a3;
@@ -518,27 +521,25 @@ namespace COL781
 				glm::vec4 c2 = currentProgram->fs(currentProgram->uniforms, a2);
 				glm::vec4 c3 = currentProgram->fs(currentProgram->uniforms, a3);
 				drawTriangle(v1, v2, v3, c1, c2, c3, 1);
+				// without supersampling
+				drawnTriangles.push_back({v1,v2,v3,c1,c2,c3});
 			}
+		}
+
+		void Rasterizer::supersample(){
 			if (supersampling == 1)
 			{
 				return;
 			}
-			// with supersampling
-			for (glm::ivec3 i : object.indices)
-			{
-				Attribs a1, a2, a3;
-				glm::vec4 v1 = currentProgram->vs(currentProgram->uniforms, object.attribs[i[0]], a1);
-				glm::vec4 v2 = currentProgram->vs(currentProgram->uniforms, object.attribs[i[1]], a2);
-				glm::vec4 v3 = currentProgram->vs(currentProgram->uniforms, object.attribs[i[2]], a3);
-				glm::vec4 c1 = currentProgram->fs(currentProgram->uniforms, a1);
-				glm::vec4 c2 = currentProgram->fs(currentProgram->uniforms, a2);
-				glm::vec4 c3 = currentProgram->fs(currentProgram->uniforms, a3);
-				drawTriangle(v1, v2, v3, c1, c2, c3, supersampling);
+			for(const TriangleCache& tr: drawnTriangles){
+				drawTriangle(tr.v1, tr.v2, tr.v3, tr.c1, tr.c2, tr.c3, supersampling);
 			}
+			drawnTriangles.clear();
 		}
 
 		void Rasterizer::show()
-		{
+		{	
+			supersample();
 			SDL_BlitScaled(framebuffer, NULL, windowSurface, NULL);
 			SDL_UpdateWindowSurface(window);
 			SDL_Event e;

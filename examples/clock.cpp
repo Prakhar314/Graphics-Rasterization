@@ -10,7 +10,7 @@ using namespace glm;
 int main() {
 	R::Rasterizer r;
     // square screen for circular clock
-    if (!r.initialize("Example 2", 640, 640, 16))
+    if (!r.initialize("Clock", 640, 640, 16))
         return EXIT_FAILURE;
     
     // use transformations, constant color

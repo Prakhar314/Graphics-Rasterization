@@ -5,8 +5,8 @@
 #include <algorithm>
 
 // Rubik's cube
-// Click anywhere on screen to rotate
-// Click green button to continue solving
+// Hover over screen to rotate
+// Hover over green button to continue solving
 
 namespace R = COL781::Software;
 // namespace R = COL781::Hardware;
@@ -40,7 +40,7 @@ public:
             2 000 011       000 001 010 011
             3 111 001       111 110 101 001
             4 111 010       111 101 101 010
-            5 111 100       111 101  100
+            5 111 100       111 101 110 100
             */
             vec4 vertices[4]{
                 vec4(i > 2, i > 2, i > 2, 1.0),
@@ -105,7 +105,7 @@ public:
             }
         }
 
-        std::mt19937 rng(SDL_GetTicks64());
+        std::mt19937 rng(42);
         std::uniform_int_distribution<int> genLayer(0, 8);
         std::uniform_int_distribution<int> genDir(-1, 2);
 
@@ -202,7 +202,7 @@ public:
     void continueRotation(float speed = 180.0f)
     {
         static float progress = 0.0f;
-        static int move = 0;
+        static uint32 move = 0;
         if (move >= moveList.size())
         {
             return;
@@ -285,36 +285,29 @@ int main()
 {
     R::Rasterizer r;
     int width = 640, height = 480;
-    if (!r.initialize("Example 5", width, height, 1))
+    if (!r.initialize("Cube", width, height, 16))
         return EXIT_FAILURE;
 
     R::ShaderProgram program = r.createShaderProgram(
         r.vsColorTransform(),
         r.fsIdentity());
-    vec4 colors[] = {
-        vec4(0.0, 0.4, 0.6, 1.0),
-        vec4(1.0, 1.0, 0.4, 1.0),
-        vec4(0.0, 0.4, 0.6, 1.0),
-        vec4(1.0, 1.0, 0.4, 1.0),
-        vec4(1.0, 0.6, 0.4, 1.0),
-        vec4(0.6, 1.0, 0.4, 1.0)};
+
+    RubiksCube c(r);
+    Arrows arrows(r);
+    // 3d
     r.enableDepthTest();
     // The transformation matrix.
     mat4 model = rotate(mat4(1.0f), radians(45.0f), normalize(vec3(1.0, 1.0, 0.0)));
-    ;
-    mat4 view = translate(mat4(1.0f), vec3(0.0f, 0.0f, -10.0f));
-    mat4 projection = perspective(radians(60.0f), (float)width / (float)height, 0.1f, 100.0f);
-    RubiksCube c(r);
-    Arrows arrows(r);
+    mat4 view = translate(mat4(1.0f), vec3(0.0f, 0.0f, -7.0f));
+    mat4 projection = perspective(radians(60.0f), (float)width / (float)height, 0.1f, 80.0f);
+    // cube rotation speed
+    float speed = 90.0f;
 
-    float speed = 90.0f; // degrees per second
-
-    bool mouse_down = false;
+    // bool mouse_down = false;
     std::pair<int, int> mouse_location = {0, 0};
 
     while (!r.shouldQuit())
     {
-        float time = SDL_GetTicks64() * 1e-3;
         r.clear(vec4(1.0, 1.0, 1.0, 1.0));
         r.useShaderProgram(program);
 

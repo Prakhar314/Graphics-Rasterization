@@ -46,6 +46,11 @@ namespace COL781 {
 			std::vector<glm::ivec3> indices;
 		};
 
+		struct TriangleCache{
+			glm::vec4 v1,v2,v3;
+			glm::vec4 c1,c2,c3;
+		};
+
 		// Copied from api.hpp
 		class Rasterizer {
 			public:
@@ -126,15 +131,20 @@ namespace COL781 {
 				float get_dist(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& p);
 				void get_barycentric(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& p, float& t1, float& t2, float& t3);
 				void drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa);
+				void supersample();
+				// store triangles for the supersampling stage
+				std::vector<TriangleCache> drawnTriangles;
 
 				SDL_Surface* framebuffer = NULL;
 				float* zbuffer = NULL;
 				SDL_Window* window = NULL;
 				SDL_Surface* windowSurface = NULL;
+
 				bool quit = false;
 				bool depthTesting = false;
 				int supersampling = 1;
 				int frameWidth, frameHeight;
+
 				ShaderProgram* currentProgram;
 			};
 
