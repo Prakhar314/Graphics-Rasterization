@@ -370,7 +370,7 @@ namespace COL781
 			SDL_PixelFormat *format = framebuffer->format;
 			Uint32 bgColor = SDL_MapRGBA(format, color[0], color[1], color[2], color[3]);
 			SDL_FillRect(framebuffer, &framerect, bgColor);
-			std::fill_n(zbuffer, frameHeight*frameWidth, 2.0f);
+			std::fill_n(zbuffer, frameHeight*frameWidth, 1e8);
 		}
 
 		inline float Rasterizer::get_dist(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &p)
@@ -454,7 +454,7 @@ namespace COL781
 					bool isInside = false;
 
 					// default depth
-					float z = 2.0f;
+					float z = 1e8;
 					if(depthTesting){
 						float w1,w2,w3;
 						get_barycentric(v1, v2, v3,glm::vec3(i+0.5,j+0.5,0),w1,w2,w3);
