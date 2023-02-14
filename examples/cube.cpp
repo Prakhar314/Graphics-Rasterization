@@ -8,8 +8,8 @@
 // Click anywhere on screen to rotate
 // Click green button to continue solving
 
-// namespace R = COL781::Software;
-namespace R = COL781::Hardware;
+namespace R = COL781::Software;
+// namespace R = COL781::Hardware;
 using namespace glm;
 
 vec4 const rubiks_colors[]{
@@ -30,7 +30,7 @@ class Cube
         ivec3(1, 2, 3)};
 
 public:
-    Cube(R::Rasterizer &r, const vec4 colors[6], const mat4& transformation = mat4(1.0f)) : t(transformation)
+    Cube(R::Rasterizer &r, const vec4 colors[6], const mat4 &transformation = mat4(1.0f)) : t(transformation)
     {
         for (int i = 0; i < 6; i++)
         {
@@ -57,7 +57,7 @@ public:
         }
     }
 
-    void draw(R::Rasterizer &r, R::ShaderProgram& program, const mat4& w = mat4(1.0f))
+    void draw(R::Rasterizer &r, R::ShaderProgram &program, const mat4 &w = mat4(1.0f))
     {
         r.setUniform(program, "transform", w * t);
         for (R::Object &f : faces)
@@ -109,7 +109,7 @@ public:
         std::uniform_int_distribution<int> genLayer(0, 8);
         std::uniform_int_distribution<int> genDir(-1, 2);
 
-        moveList.reserve(25 * sizeof(int));
+        moveList.reserve(50 * sizeof(int));
         for (int i = 0; i < 25; i++)
         {
             moveList.push_back({0, 0});
@@ -117,6 +117,9 @@ public:
         for (int i = 24; i >= 0; i--)
         {
             int l = genLayer(rng);
+            while(i<24 && l==moveList[i+1].first){
+                l = genLayer(rng);
+            }
             int d = genDir(rng);
             rotateLayer(l, -90.0f * d);
             reset(l, d);
@@ -214,7 +217,7 @@ public:
             progress = 0;
         }
     }
-    void draw(R::Rasterizer &r, R::ShaderProgram& program)
+    void draw(R::Rasterizer &r, R::ShaderProgram &program)
     {
         for (Cube &c : cubes)
         {
@@ -232,12 +235,12 @@ class Arrows
     std::vector<R::Object> arrows;
 
 public:
-    Arrows(R::Rasterizer &r, const vec4& color = vec4(200, 200, 200, 255) / 255.0f)
+    Arrows(R::Rasterizer &r, const vec4 &color = vec4(200, 200, 200, 255) / 255.0f)
     {
         vec4 vertices[3]{
-            vec4(-0.05, 0.85, 0.0, 1.0f),
-            vec4(0.05, 0.85, 0.0, 1.0f),
-            vec4(0.0, 0.95, 0.0, 1.0f)};
+            vec4(-0.05, 0.85, -1.0, 1.0f),
+            vec4(0.05, 0.85, -1.0, 1.0f),
+            vec4(0.0, 0.95, -1.0, 1.0f)};
         vec4 cs[] = {color, color, color};
         ivec3 triangles[2]{ivec3(0, 1, 2)};
         mat4 t = rotate(mat4(1.0f), radians(90.0f), vec3(0, 0, 1));
@@ -256,9 +259,9 @@ public:
         // green button to resume solving
         {
             vec4 vertices[3]{
-                vec4(0.82, -0.75, 0.0, 1.0f),
-                vec4(0.82, -0.95, 0.0, 1.0f),
-                vec4(0.92, -0.85, 0.0, 1.0f)};
+                vec4(0.82, -0.75, -1.0, 1.0f),
+                vec4(0.82, -0.95, -1.0, 1.0f),
+                vec4(0.92, -0.85, -1.0, 1.0f)};
             vec4 color = vec4(0, 255, 0, 255) / 255.0f;
             vec4 cs[] = {color, color, color};
             R::Object shape = r.createObject();
@@ -268,9 +271,9 @@ public:
             arrows.push_back(shape);
         }
     }
-    void draw(R::Rasterizer &r, R::ShaderProgram& program)
+    void draw(R::Rasterizer &r, R::ShaderProgram &program, mat4 t = mat4(1.0f))
     {
-        r.setUniform(program, "transform", mat4(1.0f));
+        r.setUniform(program, "transform", t);
         for (R::Object &o : arrows)
         {
             r.drawObject(o);
@@ -282,7 +285,7 @@ int main()
 {
     R::Rasterizer r;
     int width = 640, height = 480;
-    if (!r.initialize("Example 5", width, height, 16))
+    if (!r.initialize("Example 5", width, height, 1))
         return EXIT_FAILURE;
 
     R::ShaderProgram program = r.createShaderProgram(
@@ -316,24 +319,26 @@ int main()
         r.useShaderProgram(program);
 
         // to handle mouse events
-        SDL_Event e;
-        while (SDL_PollEvent(&e))
-        {
-            switch (e.type)
-            {
-            case SDL_QUIT:
-                std::cout << " Quit" << std::endl;
-                return false;
-            case SDL_MOUSEBUTTONDOWN:
-                mouse_down = true;
-                break;
-            case SDL_MOUSEBUTTONUP:
-                mouse_down = false;
-                break;
-            }
-        }
-        if (mouse_down)
-        {
+        // TODO: Doesn't work in SW
+        // SDL_Event e;
+        // while (SDL_PollEvent(&e))
+        // {
+        //     switch (e.type)
+        //     {
+        //     case SDL_QUIT:
+        //         std::cout << " Quit" << std::endl;
+        //         return false;
+        //     case SDL_MOUSEBUTTONDOWN:
+        //         mouse_down = true;
+        //         std::cout << " Quit" << std::endl;
+        //         break;
+        //     case SDL_MOUSEBUTTONUP:
+        //         mouse_down = false;
+        //         break;
+        //     }
+        // }
+        // if (mouse_down)
+        // {
             SDL_GetMouseState(&mouse_location.first, &mouse_location.second);
             if (mouse_location.first > 0.85f * width && mouse_location.second > 0.85f * height)
             {
@@ -347,7 +352,7 @@ int main()
                 // rotation on interaction
                 model = rotate(mat4(1.0f), radians(speed / 100), axis) * model;
             }
-        }
+        // }
 
         c.setMatrix(projection * view * model);
         c.draw(r, program);

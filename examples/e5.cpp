@@ -2,8 +2,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 // Program with perspective correct interpolation of vertex attributes.
 
-// namespace R = COL781::Software;
-namespace R = COL781::Hardware;
+namespace R = COL781::Software;
+// namespace R = COL781::Hardware;
 using namespace glm;
 int main() {
 	R::Rasterizer r;

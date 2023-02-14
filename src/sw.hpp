@@ -49,7 +49,7 @@ namespace COL781 {
 		// Copied from api.hpp
 		class Rasterizer {
 			public:
-
+				~Rasterizer();
 				/** Windows **/
 
 				// Creates a window with the given title, size, and samples per pixel.
@@ -123,12 +123,12 @@ namespace COL781 {
 				FragmentShader fsIdentity(); 
 
 			private:
-				float line_eq(const glm::vec3& v1, const glm::vec3& v2, float x);
 				float get_dist(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& p);
-				glm::vec4 interpolate_3(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec4& q1, const glm::vec4& q2, const glm::vec4& q3, const glm::vec3& p);
-				void drawTriangle(const glm::vec4& v4_1, const glm::vec4& v4_2, const glm::vec4& v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa);
+				void get_barycentric(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& p, float& t1, float& t2, float& t3);
+				void drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa);
 
 				SDL_Surface* framebuffer = NULL;
+				float* zbuffer = NULL;
 				SDL_Window* window = NULL;
 				SDL_Surface* windowSurface = NULL;
 				bool quit = false;
