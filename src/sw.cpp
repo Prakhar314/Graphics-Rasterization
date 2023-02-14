@@ -217,11 +217,14 @@ namespace COL781
 					framebuffer = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
 				}
 			}
-			zbuffer = new float[width*height];
 			// samples per axis
 			supersampling = std::max(round(sqrt(spp)), 1.0);
 			frameHeight = height;
 			frameWidth = width;
+			scaledHeight = supersampling * height;
+			scaledWidth = supersampling * width;
+			pbuffer = new Uint32[scaledHeight * scaledWidth];
+			zbuffer = new float[scaledHeight * scaledWidth];
 			return true;
 		}
 
@@ -366,11 +369,10 @@ namespace COL781
 		{
 			// argument is normalized
 			color *= 255;
-			SDL_Rect framerect{0, 0, frameWidth, frameHeight};
 			SDL_PixelFormat *format = framebuffer->format;
 			Uint32 bgColor = SDL_MapRGBA(format, color[0], color[1], color[2], color[3]);
-			SDL_FillRect(framebuffer, &framerect, bgColor);
-			std::fill_n(zbuffer, frameHeight*frameWidth, 1e8);
+			std::fill_n(zbuffer, scaledHeight*scaledWidth, 1e8);
+			std::fill_n(pbuffer, scaledHeight*scaledWidth, bgColor);
 		}
 
 		inline float Rasterizer::get_dist(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &p)
@@ -387,7 +389,7 @@ namespace COL781
 			t3 = get_dist(v1, v2, p) / d;
 		}
 
-		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa)
+		void Rasterizer::drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3)
 		{
 			float p1 = 1/v4_1[3];
 			float p2 = 1/v4_2[3];
@@ -401,20 +403,17 @@ namespace COL781
 			}
 			// transposed on multiplication with vector
 			glm::mat4x3 scale{
-				frameWidth / 2.0, 0, 0,
-				0, frameHeight / 2.0, 0,
+				scaledWidth / 2.0, 0, 0,
+				0, scaledHeight / 2.0, 0,
 				0, 0, 1,
-				frameWidth / 2.0, frameHeight / 2.0, 0};
+				scaledWidth / 2.0, scaledHeight / 2.0, 0};
 
 			glm::vec3 v1{scale * v4_1}, v2{scale * v4_2}, v3{scale * v4_3};
 
-			Uint32 *pixels = (Uint32 *)framebuffer->pixels;
 			SDL_PixelFormat *format = framebuffer->format;
 			c1 *= 255;
 			c2 *= 255;
 			c3 *= 255;
-
-			float step = 1.0 / (spa + 1);
 
 			float z1 = v1[2];
 			float z2 = v2[2];
@@ -431,10 +430,10 @@ namespace COL781
 			float i_min = std::min(v1[0], std::min(v2[0], v3[0]));
 			float i_max = std::max(v1[0], std::max(v2[0], v3[0]));
 
-			j_min = std::min(std::max(0.0f, j_min), (frameHeight - 1) * 1.0f);
-			j_max = std::min(std::max(0.0f, j_max), (frameHeight - 1) * 1.0f);
-			i_min = std::min(std::max(0.0f, i_min), (frameWidth - 1) * 1.0f);
-			i_max = std::min(std::max(0.0f, i_max), (frameWidth - 1) * 1.0f);
+			j_min = std::min(std::max(0.0f, j_min), (scaledHeight - 1) * 1.0f);
+			j_max = std::min(std::max(0.0f, j_max), (scaledHeight - 1) * 1.0f);
+			i_min = std::min(std::max(0.0f, i_min), (scaledWidth - 1) * 1.0f);
+			i_max = std::min(std::max(0.0f, i_max), (scaledWidth - 1) * 1.0f);
 
 			for (int j = j_min; j <= j_max; j++)
 			{
@@ -443,12 +442,9 @@ namespace COL781
 					// use previous color as default
 					Uint8 r, g, b, a;
 					SDL_GetRGBA(
-						pixels[i + frameWidth * (frameHeight - 1 - j)],
+						pbuffer[i + scaledWidth * (scaledHeight - 1 - j)],
 						format, &r, &g, &b, &a);
-					glm::ivec4 default_color{r, g, b, a};
-
-					// keeping sum of samples here
-					glm::ivec4 pixel_color{0, 0, 0, 0};
+					glm::ivec4 pixel_color{r, g, b, a};
 
 					// whether point was inside the triangle or not
 					bool isInside = false;
@@ -460,55 +456,72 @@ namespace COL781
 						get_barycentric(v1, v2, v3,glm::vec3(i+0.5,j+0.5,0),w1,w2,w3);
 						z = (w1*z1 + w2*z2 + w3*z3);
 
-						if(z>=zbuffer[i + frameWidth * (frameHeight - 1 - j)]){
+						if(z>=zbuffer[i + scaledWidth * (scaledHeight - 1 - j)]){
 							// far away, skip
 							continue;
 						}
 					}
-					// spa * spa samples per pixel
-					for (int s_i = 1; s_i <= spa; s_i++)
+					glm::vec3 pos{i + 0.5, j + 0.5, 0};
+					if (// check if pos inside triangle
+						// same side of v1v2 as v3
+						glm::cross(v2 - v1, pos - v1)[2] * cp > 0 &&
+						glm::cross(v3 - v2, pos - v2)[2] * cp  > 0 &&
+						glm::cross(v1 - v3, pos - v3)[2] * cp  > 0)
 					{
-						for (int s_j = 1; s_j <= spa; s_j++)
-						{
-							glm::vec3 pos{i + s_i * step, j + s_j * step, 0};
-							if (// check if pos inside triangle
-								// same side of v1v2 as v3
-								glm::cross(v2 - v1, pos - v1)[2] * cp > 0 &&
-								glm::cross(v3 - v2, pos - v2)[2] * cp  > 0 &&
-								glm::cross(v1 - v3, pos - v3)[2] * cp  > 0)
-							{
-								isInside = true;
-								float w1,w2,w3;
-								get_barycentric(v1, v2, v3,pos,w1,w2,w3);
-								if(depthTesting){
-									pixel_color += (w1*c1*p1 + w2*c2*p2 + w3*c3*p3)/(w1*p1 + w2*p2 + w3*p3);
-								}
-								else{
-									pixel_color += (w1*c1 + w2*c2 + w3*c3);
-								}
-							}
-							else
-							{
-								pixel_color += default_color;
-							}
+						isInside = true;
+						float w1,w2,w3;
+						get_barycentric(v1, v2, v3,pos,w1,w2,w3);
+						if(depthTesting){
+							pixel_color = (w1*c1*p1 + w2*c2*p2 + w3*c3*p3)/(w1*p1 + w2*p2 + w3*p3);
+						}
+						else{
+							pixel_color = (w1*c1 + w2*c2 + w3*c3);
 						}
 					}
 					if(!isInside){
 						continue;
 					}					
-					// average over number of samples
-					pixel_color /= spa * spa;
-					if(!depthTesting || z <= zbuffer[i + frameWidth * (frameHeight - 1 - j)]){
-						pixels[i + frameWidth * (frameHeight - 1 - j)] = SDL_MapRGBA(format, pixel_color[0], pixel_color[1], pixel_color[2], pixel_color[3]);
+					
+					if(!depthTesting || z <= zbuffer[i + scaledWidth * (scaledHeight - 1 - j)]){
+						pbuffer[i + scaledWidth * (scaledHeight - 1 - j)] = SDL_MapRGBA(format, pixel_color[0], pixel_color[1], pixel_color[2], pixel_color[3]);
 						if(depthTesting){
-							zbuffer[i + frameWidth * (frameHeight - 1 - j)] = z;
+							zbuffer[i + scaledWidth * (scaledHeight - 1 - j)] = z;
 						}
 					}
 					
 				}
 			}
 		}
-
+		void Rasterizer::updateFrameBuffer()
+		{
+			SDL_PixelFormat *format = framebuffer->format;
+			Uint32* pixels = (Uint32*)framebuffer->pixels;
+			for(int i =0;i<frameWidth;i++){
+				for(int j=0;j<frameHeight;j++){
+					Uint32 alpha = 0;
+					Uint32 red = 0;
+					Uint32 green = 0;
+					Uint32 blue = 0;
+					for(int s_i=i*supersampling;s_i<(i+1)*supersampling;s_i++){
+						for(int s_j=j*supersampling;s_j<(j+1)*supersampling;s_j++){
+							Uint8 r, g, b, a;
+							SDL_GetRGBA(
+								pbuffer[s_i + scaledWidth * (scaledHeight - 1 - s_j)],
+								format, &r, &g, &b, &a);
+							red+=r;
+							green+=g;
+							blue+=b;
+							alpha+=a;
+						}
+					}
+					alpha/=supersampling * supersampling;
+					red/=supersampling * supersampling;
+					green/=supersampling * supersampling;
+					blue/=supersampling * supersampling;
+					pixels[i + frameWidth * (frameHeight - 1 - j)] = SDL_MapRGBA(format, red, green, blue, alpha);
+				}
+			}
+		}
 		void Rasterizer::drawObject(const Object &object)
 		{
 			for (glm::ivec3 i : object.indices)
@@ -520,26 +533,12 @@ namespace COL781
 				glm::vec4 c1 = currentProgram->fs(currentProgram->uniforms, a1);
 				glm::vec4 c2 = currentProgram->fs(currentProgram->uniforms, a2);
 				glm::vec4 c3 = currentProgram->fs(currentProgram->uniforms, a3);
-				drawTriangle(v1, v2, v3, c1, c2, c3, 1);
-				// without supersampling
-				drawnTriangles.push_back({v1,v2,v3,c1,c2,c3});
+				drawTriangle(v1, v2, v3, c1, c2, c3);
 			}
 		}
-
-		void Rasterizer::supersample(){
-			if (supersampling == 1)
-			{
-				return;
-			}
-			for(const TriangleCache& tr: drawnTriangles){
-				drawTriangle(tr.v1, tr.v2, tr.v3, tr.c1, tr.c2, tr.c3, supersampling);
-			}
-			drawnTriangles.clear();
-		}
-
 		void Rasterizer::show()
 		{	
-			supersample();
+			updateFrameBuffer();
 			SDL_BlitScaled(framebuffer, NULL, windowSurface, NULL);
 			SDL_UpdateWindowSurface(window);
 			SDL_Event e;
@@ -551,8 +550,9 @@ namespace COL781
 				}
 			}
 		}
-		Rasterizer::~Rasterizer(){
-			delete[] zbuffer;
-		}
+		// Rasterizer::~Rasterizer(){
+		// 	delete[] zbuffer;
+		// 	delete[] pbuffer;
+		// }
 	}
 }

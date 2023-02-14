@@ -285,7 +285,7 @@ int main()
 {
     R::Rasterizer r;
     int width = 640, height = 480;
-    if (!r.initialize("Cube", width, height, 16))
+    if (!r.initialize("Cube", width, height, 4))
         return EXIT_FAILURE;
 
     R::ShaderProgram program = r.createShaderProgram(

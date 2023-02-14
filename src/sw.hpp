@@ -54,7 +54,7 @@ namespace COL781 {
 		// Copied from api.hpp
 		class Rasterizer {
 			public:
-				~Rasterizer();
+				// ~Rasterizer();
 				/** Windows **/
 
 				// Creates a window with the given title, size, and samples per pixel.
@@ -130,13 +130,14 @@ namespace COL781 {
 			private:
 				float get_dist(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& p);
 				void get_barycentric(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& p, float& t1, float& t2, float& t3);
-				void drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, int spa);
-				void supersample();
+				void drawTriangle(glm::vec4 v4_1, glm::vec4 v4_2, glm::vec4 v4_3, glm::vec4 c1, glm::vec4 c2, glm::vec4 c3);
+				void updateFrameBuffer();
 				// store triangles for the supersampling stage
 				std::vector<TriangleCache> drawnTriangles;
 
 				SDL_Surface* framebuffer = NULL;
 				float* zbuffer = NULL;
+				Uint32* pbuffer = NULL;
 				SDL_Window* window = NULL;
 				SDL_Surface* windowSurface = NULL;
 
@@ -144,6 +145,7 @@ namespace COL781 {
 				bool depthTesting = false;
 				int supersampling = 1;
 				int frameWidth, frameHeight;
+				int scaledWidth, scaledHeight;
 
 				ShaderProgram* currentProgram;
 			};
